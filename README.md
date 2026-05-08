@@ -1,4 +1,4 @@
-# qemu hello world
+# qemu ↔️ multisim setup
 
 Test setup enabling RISCV test code running on `qemu-system-riscv64` to communicate with an rtl sim via DPI and [multisim](https://github.com/antoinemadec/multisim/tree/main).
 
