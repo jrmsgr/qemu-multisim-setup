@@ -6,7 +6,7 @@ Test setup enabling RISCV test code running on `qemu-system-riscv64` to communic
 
 Here is how the setup works:
 
-![qemu setup](./.img/qemu_hello_world_setup.drawio.png)
+![qemu setup](./.img/qemu_hello_world_setup.drawio_white.png)
 
 A custom device, 'axe-dv-rtl-sim', is instantiated inside a machine (i.e. the emulated version of a chip) at address `0x100000000`. Its write and read methods have been overridden to connect through with the rtl sim running in parallel. Every time the program running on this machine performs accesses to the address range of 'axe-dv-rtl-sim', the latter forwards the access details to the testbench and then wait for a response. That response is passed back to the machine and the execution continues.
 
