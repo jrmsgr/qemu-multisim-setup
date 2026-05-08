@@ -10,6 +10,15 @@ Here is how the setup works:
 
 A custom device, `axe-dv-rtl-sim`, is instantiated inside a machine (i.e. the emulated version of a chip) at address `0x100000000`. Its write and read methods have been overridden to connect to a rtl sim running in parallel. Every time the program performs accesses to the address range of `axe-dv-rtl-sim`, the latter forwards the access info to the testbench and waits for a response. That response is then passed back to the machine and the execution continues.
 
+Links to the different pieces:
+
+- Custom device to communicate with QEMU: [axe-dv-rtl-sim.c](https://github.com/jrmsgr/qemu/blob/jrmsgr/axe-dv-rtl-sim/hw/misc/axe-dv-rtl-sim.c)
+- Custom QEMU platform containing `axe-dv-rtl-sim`: [axe_dv.c](https://github.com/jrmsgr/qemu/blob/jrmsgr/axe-dv-rtl-sim/hw/riscv/axe_dv.c)
+- RTL testbench: [top.sv](./tb/top.sv)
+- QEMU packets to AXI adapter: [axe-dv-axi-adapter.sv](./tb/axe-dv-axi-adapter.sv)
+- SW test running on QEMU: [hello.c](./sw/hello.c)
+
+
 ## How to run
 
 - Checkout all submodules:
