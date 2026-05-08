@@ -1,0 +1,6 @@
+[submodule "qemu"]
+	path = qemu
+	url = git@github.com:jrmsgr/qemu.git
+[submodule "multisim"]
+	path = multisim
+	url = https://github.com/antoinemadec/multisim.git

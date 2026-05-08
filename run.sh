@@ -25,16 +25,18 @@ check_cmd_exist 'verilator'
 check_cmd_exist 'riscv64-elf-gcc'
 check_cmd_exist 'riscv64-elf-objdump'
 
+MULTISIM_RELEASE_DIR=$(realpath "multisim_release/")
+
 banner "building multisim shared libs"
-make -C multisim RELEASE_DIR=multisim_release/ TARGET=SW
+source ./multisim/env.sh
+make RELEASE_DIR=$MULTISIM_RELEASE_DIR TARGET=SW
 
 # Append multisim .so files to shared library paths
-export LD_LIBRARY_PATH="$(realpath ./multisim/multisim_release):$LD_LIBRARY_PATH"
+export LD_LIBRARY_PATH="$MULTISIM_RELEASE_DIR:$LD_LIBRARY_PATH"
 
 banner "building glib-2.0"
 GLIB2_VERSION=2.66.8
 GLIB2_INSTALL_DIR="$(realpath ./glib-$GLIB2_VERSION-release)"
-echo "GLIB2 install dir: $GLIB2_INSTALL_DIR"
 export PKG_CONFIG_PATH="$PKG_CONFIG_PATH:$GLIB2_INSTALL_DIR/lib64/pkgconfig"
 if ! pkg-config --atleast-version $GLIB2_VERSION glib-2.0; then
     glib2_archive="glib-$GLIB2_VERSION.tar.xz"
@@ -57,9 +59,9 @@ cd qemu
 if ! [ -d build ]; then
     mkdir build
     cd build
-    ../configure -Dmultisim-release-dir=../../multisim/multisim_release
+    ../configure -Dmultisim-release-dir=$MULTISIM_RELEASE_DIR
 else
-    # qemu automatically reconfigures itself is a build is already present
+    # qemu automatically reconfigures itself if a build is already present
     cd build
 fi
 
