@@ -2,9 +2,17 @@
 #include <stdint.h>
 #include "printf.h"
 
-/* print chars out through spike front-end server mechanism */
+/* print chars out through spike front-end server mechanism.
+ *
+ * See qemu/hw/char/riscv_htif.c
+ */
+#define HTIF_DEV_SHIFT  56
+#define HTIF_CMD_SHIFT  48
+#define HTIF_DEV_CONSOLE        1
+#define HTIF_CONSOLE_CMD_PUTC   1
+
 void putchar(char c) {
-    tohost = ((uint64_t)1 << 56) | ((uint64_t)1 << 48) | (uint64_t)c;
+    tohost = ((uint64_t)HTIF_DEV_CONSOLE << HTIF_DEV_SHIFT) | ((uint64_t)HTIF_CONSOLE_CMD_PUTC << HTIF_CMD_SHIFT) | (uint64_t)c;
     while (fromhost == 0);
     fromhost = 0;
 }
