@@ -51,5 +51,5 @@ if [[ $trace == 1 ]]; then
 fi
 
 eval "$gdb_cmd ../qemu/build/qemu-system-riscv64 \
-    -machine axe_dv,axe-dv-rtl-multisim-server-prefix=$multisim_server_name \
-    -bios $elf_name ${extra_args[@]} -d cpu,int -D trace.log"
+    -machine axe_dv,axe-dv-rtl-multisim-server-prefix=$multisim_server_name,axe-dv-rtl-sim-irq-number=64 \
+    -bios $elf_name ${extra_args[@]} -d in_asm -D trace.log"

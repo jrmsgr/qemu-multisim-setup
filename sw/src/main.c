@@ -6,15 +6,18 @@
 
 #define RTL_SIM_BASE_ADDRESS 0x100000000u
 #define RTL_SIM_SIZE 0x100000000u
-#define RTL_SIM_IRQ_OFFSET (1000*8)
+#define RTL_SIM_IRQ_TRIGGER_OFFSET (1000*8) // i_dv_axi_ram.mem[1000] address
+#define RTL_SIM_IRQ_NUMBER 64 // Number of interrupts connected to i_axe_dv_interrupt_adapter
 uintptr_t const rtl_sim = RTL_SIM_BASE_ADDRESS;
+volatile uint64_t* irq_reg = (volatile uint64_t*)(rtl_sim+RTL_SIM_IRQ_TRIGGER_OFFSET);
 volatile bool irq_fired;
+uint64_t expected_irq = 0;
 
 void external_irq_handler(uint32_t irq) {
-  ASSERT(irq == 1);
+  ASSERT((irq <= RTL_SIM_IRQ_NUMBER) && (irq >= 1));
   // Clear interrupt coming from axe-dv-rtl-sim
-  *(volatile uint64_t*)(rtl_sim+RTL_SIM_IRQ_OFFSET) = 0x0;
-  irq_fired=true;
+  *irq_reg &= ~((uint64_t)1<<(irq-1)); // Bit 0 triggers IRQ 1
+  irq_fired=(expected_irq == irq);
 }
 
 uint64_t xorshift64(uint64_t *state) {
@@ -34,10 +37,6 @@ int main(void) {
   uint64_t mem_offset;
   uintptr_t mem_addr;
   uint32_t counter;
-
-  // Enable external interrupt no. 1
-  plic_set_interrupt_priority(1, PLIC_MAX_PRIORITY); // max priority
-  plic_enable_interrupt(1);
 
   printf("Testing AxSIZE...\n");
   *(volatile uint64_t*)rtl_sim = val_u64;
@@ -87,20 +86,28 @@ int main(void) {
   }
 
   printf("Testing interrupts...");
-  irq_fired = false;
-  counter = 0;
-  *(volatile uint64_t*)(rtl_sim+RTL_SIM_IRQ_OFFSET) = 0x1;
-  while(!irq_fired && (counter < 10000)) {
-    counter++;
+
+  // Enable external interrupts
+  for (uint64_t irq=1; irq<= RTL_SIM_IRQ_NUMBER; irq++) {
+    plic_set_interrupt_priority(irq, PLIC_MAX_PRIORITY); // max priority
+    plic_enable_interrupt(irq);
   }
 
-  if (!irq_fired) {
-    printf("IRQ did not fire!\n");
-    exit(EXIT_FAILURE);
+  for (uint64_t irq=1; irq<= RTL_SIM_IRQ_NUMBER; irq++) {
+    irq_fired = false;
+    counter = 0;
+    expected_irq = irq;
+    *irq_reg |= ((uint64_t)1<<(irq-1));
+    while(!irq_fired && (counter < 100000)) {
+      counter++;
+    }
+
+    if (!irq_fired) {
+      printf("IRQ %lu did not fire!\n", irq);
+      exit(EXIT_FAILURE);
+    }
   }
-  else {
-    printf("IRQ fired!\n");
-  }
+  printf("All %d interrupts fired!\n", RTL_SIM_IRQ_NUMBER);
 
   printf("Test finished successfully!\n");
   return EXIT_SUCCESS;
