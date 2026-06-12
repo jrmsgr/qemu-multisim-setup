@@ -1,6 +1,7 @@
 #include <stdint.h>
 #include "trap.h"
 #include "encoding.h"
+#include "plic.h"
 
 extern volatile uint64_t tohost;
 extern volatile uint64_t fromhost;
@@ -51,12 +52,11 @@ uintptr_t const rtl_sim = RTL_SIM_BASE_ADDRESS;
 
 void trap_handler(SAVED_CONTEXT* context) {
   // Claim interrupt
-  uint32_t int_id = *(volatile uint32_t*)(0xc000000 + 0x200004);
+  uint32_t int_id = plic_claim_interrupt();
   print_str("interrupt fired!\n");
   *(volatile uint8_t*)rtl_sim = 0x0;
   // Complete interrtupt
-  *(volatile uint32_t*)(0xc000000 + 0x200004) = int_id;
-  // exit(1);
+  plic_complete_interrupt(int_id);
 }
 
 void  _init(void) {
@@ -72,8 +72,8 @@ void  _init(void) {
   // Enable external interrupts
   set_csr(CSR_MIE, MIP_MEIP);
   set_csr(CSR_MSTATUS, MSTATUS_MIE);
-  *(volatile uint32_t *)(0xc000000 +  0x0 + 4) = 7; // max priority
-  *(volatile uint32_t *)(0xc000000 + 0x2000) = 0x2; // enable interrupt source 1
+  plic_set_interrupt_priority(1, 7); // max priority
+  plic_enable_interrupt(1);
                                                     //
   // Check AxSIZE work correctly
   *(volatile uint64_t*)rtl_sim = val_u64;
