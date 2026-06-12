@@ -1,16 +1,20 @@
 #include <stdint.h>
+#include <stdbool.h>
 #include "plic.h"
 #include "printf.h"
 #include "assert.h"
 
 #define RTL_SIM_BASE_ADDRESS 0x100000000u
 #define RTL_SIM_SIZE 0x100000000u
+#define RTL_SIM_IRQ_OFFSET (1000*8)
 uintptr_t const rtl_sim = RTL_SIM_BASE_ADDRESS;
+volatile bool irq_fired;
 
 void external_irq_handler(uint32_t irq) {
   ASSERT(irq == 1);
   // Clear interrupt coming from axe-dv-rtl-sim
-  *(volatile uint64_t*)rtl_sim = 0x0;
+  *(volatile uint64_t*)(rtl_sim+RTL_SIM_IRQ_OFFSET) = 0x0;
+  irq_fired=true;
 }
 
 uint64_t xorshift64(uint64_t *state) {
@@ -29,6 +33,7 @@ int main(void) {
   uint64_t expected_val;
   uint64_t mem_offset;
   uintptr_t mem_addr;
+  uint32_t counter;
 
   // Enable external interrupt no. 1
   plic_set_interrupt_priority(1, PLIC_MAX_PRIORITY); // max priority
@@ -79,6 +84,22 @@ int main(void) {
       if (mem_offset < 8) {
           mem_offset = 8;
       }
+  }
+
+  printf("Testing interrupts...");
+  irq_fired = false;
+  counter = 0;
+  *(volatile uint64_t*)(rtl_sim+RTL_SIM_IRQ_OFFSET) = 0x1;
+  while(!irq_fired && (counter < 10000)) {
+    counter++;
+  }
+
+  if (!irq_fired) {
+    printf("IRQ did not fire!\n");
+    exit(EXIT_FAILURE);
+  }
+  else {
+    printf("IRQ fired!\n");
   }
 
   printf("Test finished successfully!\n");

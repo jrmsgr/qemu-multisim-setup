@@ -140,7 +140,7 @@ module top;
       .clk(clk),
       .rst_n(rst_n),
       .server_name(server_name),
-      .interrupts(i_dv_axi_ram.mem[0] & 1'b1),
+      .interrupts(i_dv_axi_ram.mem[1000] & 1'b1),
       .interrupt_pending(interrupt_pending)
   );
 
