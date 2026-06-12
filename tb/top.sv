@@ -31,7 +31,8 @@ module top;
 
   always @(posedge clk) begin
     if (exit) begin
-      $display("exit");
+      assert (interrupt_pending == 'h0) else $fatal("finishing simulation with interrupts pending");
+      $display("exiting!");
       $finish;
     end
   end
@@ -130,6 +131,17 @@ module top;
       .s_axi_rlast  (i_axi_m_r.last),
       .s_axi_rvalid (i_axi_m_rvalid),
       .s_axi_rready (o_axi_m_rready)
+  );
+
+
+  bit interrupt_pending;
+
+  axe_dv_interrupt_adapter i_axe_dv_interrupt_adapter (
+      .clk(clk),
+      .rst_n(rst_n),
+      .server_name(server_name),
+      .interrupts(i_dv_axi_ram.mem[0] & 1'b1),
+      .interrupt_pending(interrupt_pending)
   );
 
   initial begin

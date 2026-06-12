@@ -1,8 +1,11 @@
 #!/usr/bin/env bash
 
+set -e
+
 verilator --binary -j 0 --top-module top --trace-vcd \
     axi_pkg.sv \
     axe-dv-axi-adapter.sv \
+    axe-dv-interrupt-adapter.sv \
     dv_axi_ram.sv \
     top.sv \
     -Wno-TIMESCALEMOD \

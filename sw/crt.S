@@ -122,7 +122,7 @@ _start:
 
   j _init
 
-  .align 2
+  .align 4
 trap_entry:
   addi sp, sp, -288 # 36 registers * 8B
 

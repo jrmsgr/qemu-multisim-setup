@@ -35,9 +35,15 @@ C_FLAGS := -O2 \
 	-Wl,--no-warn-rwx-segments \
 	-Wl,--no-relax
 
-hello.elf: $(SOURCE_FILES) $(HEADER_FILES) $(LINKER_SCRIPT)
-	$(CC) $(C_FLAGS) -o $@ $(SOURCE_FILES) -Iinclude/ -T $(LINKER_SCRIPT)
+COMPILE_FLAGS := $(C_FLAGS) -Iinclude/
+
+.PHONY: compile_flags
+compile_flags:
+	echo "$(COMPILE_FLAGS)" | tr ' ' '\n' > compile_flags.txt
+
+hello.elf: $(SOURCE_FILES) $(HEADER_FILES) $(LINKER_SCRIPT) compile_flags
+	$(CC) $(COMPILE_FLAGS) -o $@ $(SOURCE_FILES) -T $(LINKER_SCRIPT)
 	$(OBJDUMP) -D $@ > $@.S
 
 clean:
-	rm -f *.o *.elf *.elf.S
+	rm -f *.o *.elf *.elf.S compile_flags.txt

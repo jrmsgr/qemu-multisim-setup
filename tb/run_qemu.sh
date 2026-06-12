@@ -1,5 +1,7 @@
 #!/usr/bin/env bash
 
+set -e
+
 trace=0
 gdb=0
 gdb_cmd=""
@@ -35,7 +37,7 @@ if [[ $elf_name == "" ]]; then
 fi
 
 if [[ $gdb == 1 ]]; then
-    gdb_cmd="gdb"
+    gdb_cmd="gdb --args"
 fi
 
 if [[ $gui == 0 ]]; then 
@@ -50,4 +52,4 @@ fi
 
 eval "$gdb_cmd ../qemu/build/qemu-system-riscv64 \
     -machine axe_dv,axe-dv-rtl-multisim-server-prefix=$multisim_server_name \
-    -bios $elf_name ${extra_args[@]} -d in_asm -D trace.log"
+    -bios $elf_name ${extra_args[@]} -d cpu,int -D trace.log"

@@ -1,24 +1,33 @@
 #include <stdint.h>
+#include "trap.h"
+#include "encoding.h"
 
 extern volatile uint64_t tohost;
 extern volatile uint64_t fromhost;
 
 #define RTL_SIM_BASE_ADDRESS 0x100000000u
 #define RTL_SIM_SIZE 0x100000000u
-#define ASSERT(cond) { \
-    if (!(cond)) { \
-      print_str("Mismatch\n", 9); \
-      exit(1); \
-    } \
-  }
 
-void print_str(char* str, uint32_t length) {
+void print_str_internal(char* str, uint32_t length) {
   for (uint32_t i = 0; i < length; i++) {
     tohost = ((uint64_t)1 << 56) | ((uint64_t)1 << 48) | (uint64_t)str[i];
     while (fromhost == 0);
     fromhost = 0;
   }
 }
+
+#define print_str(str) print_str_internal(str, sizeof(str) / sizeof(char))
+#define STRINGIFY_INTERNAL(str) #str
+#define STRINGIFY(str) STRINGIFY_INTERNAL(str)
+#define ASSERT(cond)                       \
+  {                                        \
+    if (!(cond)) {                         \
+      print_str(__FILE__ ":" STRINGIFY(    \
+          __LINE__) ": "                   \
+                    "Assertion failed\n"); \
+      exit(1);                             \
+    }                                      \
+  }
 
 uint64_t xorshift64(uint64_t *state) {
   uint64_t x = *state;
@@ -38,9 +47,20 @@ void __attribute__((noreturn)) exit(int code) {
   }
 }
 
+uintptr_t const rtl_sim = RTL_SIM_BASE_ADDRESS;
+
+void trap_handler(SAVED_CONTEXT* context) {
+  // Claim interrupt
+  uint32_t int_id = *(volatile uint32_t*)(0xc000000 + 0x200004);
+  print_str("interrupt fired!\n");
+  *(volatile uint8_t*)rtl_sim = 0x0;
+  // Complete interrtupt
+  *(volatile uint32_t*)(0xc000000 + 0x200004) = int_id;
+  // exit(1);
+}
+
 void  _init(void) {
   int code = 1;
-  uintptr_t const rtl_sim = RTL_SIM_BASE_ADDRESS;
   uint64_t val_u64 = 0xcafedecadeadbeef;
   uint32_t val_u32 = 0xf00dbabe;
   uint16_t val_u16 = 0xcad0;
@@ -49,6 +69,12 @@ void  _init(void) {
   uint64_t mem_offset;
   uintptr_t mem_addr;
 
+  // Enable external interrupts
+  set_csr(CSR_MIE, MIP_MEIP);
+  set_csr(CSR_MSTATUS, MSTATUS_MIE);
+  *(volatile uint32_t *)(0xc000000 +  0x0 + 4) = 7; // max priority
+  *(volatile uint32_t *)(0xc000000 + 0x2000) = 0x2; // enable interrupt source 1
+                                                    //
   // Check AxSIZE work correctly
   *(volatile uint64_t*)rtl_sim = val_u64;
   *(volatile uint32_t*)rtl_sim = val_u32;
@@ -96,6 +122,6 @@ void  _init(void) {
       }
   }
 
-  print_str("Match!\n", 7);
+  print_str("Match!\n");
   exit(0);
 }

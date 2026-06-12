@@ -77,3 +77,11 @@ cd ../tb
 rm -rf .multisim
 ./run_verilator.sh &> sim.log &
 ./run_qemu.sh ../sw/hello.elf
+
+clean_exit=0
+grep -E "^exiting!" sim.log || clean_exit=1
+
+if [[ $clean_exit != 0 ]]; then
+    echo "simulation failed!"
+    exit 1
+fi
