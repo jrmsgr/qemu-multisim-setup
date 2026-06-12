@@ -1,34 +1,17 @@
 #include <stdint.h>
-#include "trap.h"
-#include "encoding.h"
 #include "plic.h"
-
-extern volatile uint64_t tohost;
-extern volatile uint64_t fromhost;
+#include "printf.h"
+#include "assert.h"
 
 #define RTL_SIM_BASE_ADDRESS 0x100000000u
 #define RTL_SIM_SIZE 0x100000000u
+uintptr_t const rtl_sim = RTL_SIM_BASE_ADDRESS;
 
-void print_str_internal(char* str, uint32_t length) {
-  for (uint32_t i = 0; i < length; i++) {
-    tohost = ((uint64_t)1 << 56) | ((uint64_t)1 << 48) | (uint64_t)str[i];
-    while (fromhost == 0);
-    fromhost = 0;
-  }
+void external_irq_handler(uint32_t irq) {
+  ASSERT(irq == 1);
+  // Clear interrupt coming from axe-dv-rtl-sim
+  *(volatile uint64_t*)rtl_sim = 0x0;
 }
-
-#define print_str(str) print_str_internal(str, sizeof(str) / sizeof(char))
-#define STRINGIFY_INTERNAL(str) #str
-#define STRINGIFY(str) STRINGIFY_INTERNAL(str)
-#define ASSERT(cond)                       \
-  {                                        \
-    if (!(cond)) {                         \
-      print_str(__FILE__ ":" STRINGIFY(    \
-          __LINE__) ": "                   \
-                    "Assertion failed\n"); \
-      exit(1);                             \
-    }                                      \
-  }
 
 uint64_t xorshift64(uint64_t *state) {
   uint64_t x = *state;
@@ -38,29 +21,7 @@ uint64_t xorshift64(uint64_t *state) {
   return *state = x;
 }
 
-
-void __attribute__((noreturn)) exit(int code) {
-  uint64_t code_extended = (unsigned int)code;
-  tohost = (code_extended << 1) | 1;
-
-  while (1) {
-    asm("wfi");
-  }
-}
-
-uintptr_t const rtl_sim = RTL_SIM_BASE_ADDRESS;
-
-void trap_handler(SAVED_CONTEXT* context) {
-  // Claim interrupt
-  uint32_t int_id = plic_claim_interrupt();
-  print_str("interrupt fired!\n");
-  *(volatile uint8_t*)rtl_sim = 0x0;
-  // Complete interrtupt
-  plic_complete_interrupt(int_id);
-}
-
-void  _init(void) {
-  int code = 1;
+int main(void) {
   uint64_t val_u64 = 0xcafedecadeadbeef;
   uint32_t val_u32 = 0xf00dbabe;
   uint16_t val_u16 = 0xcad0;
@@ -69,13 +30,11 @@ void  _init(void) {
   uint64_t mem_offset;
   uintptr_t mem_addr;
 
-  // Enable external interrupts
-  set_csr(CSR_MIE, MIP_MEIP);
-  set_csr(CSR_MSTATUS, MSTATUS_MIE);
-  plic_set_interrupt_priority(1, 7); // max priority
+  // Enable external interrupt no. 1
+  plic_set_interrupt_priority(1, PLIC_MAX_PRIORITY); // max priority
   plic_enable_interrupt(1);
-                                                    //
-  // Check AxSIZE work correctly
+
+  printf("Testing AxSIZE...\n");
   *(volatile uint64_t*)rtl_sim = val_u64;
   *(volatile uint32_t*)rtl_sim = val_u32;
   *(volatile uint16_t*)rtl_sim = val_u16;
@@ -91,7 +50,7 @@ void  _init(void) {
   ASSERT(expected_val == *(volatile uint64_t*)rtl_sim);
 
 
-  // Check WSTRB + data shift work correctly
+  printf("Testing WSTRB + data shift...\n");
   *(volatile uint64_t*)rtl_sim = val_u64;
   *(volatile uint32_t*)(rtl_sim+4) = val_u32;
   *(volatile uint16_t*)(rtl_sim+6) = val_u16;
@@ -107,7 +66,7 @@ void  _init(void) {
   ASSERT(expected_val == *(volatile uint64_t*)rtl_sim);
 
 
-  // Check AxADDR work properly
+  printf("Testing AxADDR...\n");
   expected_val = 0xcafedecadeadbeef;
   mem_offset = 0;
   while (mem_offset < RTL_SIM_SIZE) {
@@ -122,6 +81,6 @@ void  _init(void) {
       }
   }
 
-  print_str("Match!\n");
-  exit(0);
+  printf("Test finished successfully!\n");
+  return EXIT_SUCCESS;
 }

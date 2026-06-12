@@ -1,0 +1,3 @@
+*.S
+*.elf
+compile_flags.txt

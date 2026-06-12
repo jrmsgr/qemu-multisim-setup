@@ -1,0 +1,4 @@
+*.log
+*.vcd
+obj_dir/
+.multisim/

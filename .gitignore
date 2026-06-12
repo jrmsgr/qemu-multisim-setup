@@ -1,5 +1,0 @@
-*.o
-*.elf
-*.log
-tb/obj_dir
-.multisim/

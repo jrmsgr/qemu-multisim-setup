@@ -3,9 +3,8 @@
 CC=riscv64-elf-gcc
 OBJDUMP=riscv64-elf-objdump
 
-HEADER_FILES := $(wildcard include/*.h)
-
-SOURCE_FILES := crt.S hello.c
+HEADER_FILES := $(wildcard src/*.h)
+SOURCE_FILES := crt.S $(wildcard src/*.c)
 
 LINKER_SCRIPT := link.ld
 
@@ -35,7 +34,7 @@ C_FLAGS := -O2 \
 	-Wl,--no-warn-rwx-segments \
 	-Wl,--no-relax
 
-COMPILE_FLAGS := $(C_FLAGS) -Iinclude/
+COMPILE_FLAGS := $(C_FLAGS) -Isrc/
 
 .PHONY: compile_flags
 compile_flags:
