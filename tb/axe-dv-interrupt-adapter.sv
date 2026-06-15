@@ -12,6 +12,10 @@ module axe_dv_interrupt_adapter #(
     // Max number of interrupts supported by Sifive's PLIC inside QEMU
     localparam int MAX_IRQ_NUMBER=520;
 
+    if (MAX_IRQ_NUMBER < IRQ_NUMBER) begin
+        $fatal("Too many interrupts: %0d. Max allowed is: %0d", IRQ_NUMBER, MAX_IRQ_NUMBER);
+    end
+
     bit data_rdy;
     bit[IRQ_NUMBER-1:0] interrupts_prev;
 
