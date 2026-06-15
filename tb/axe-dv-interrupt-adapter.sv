@@ -37,7 +37,6 @@ module axe_dv_interrupt_adapter #(
         interrupts_prev <= interrupts;
         if (interrupts != interrupts_prev) begin
             update_pending <= 1'b1;
-            $display("Sending interrupts=%0h", interrupts);
             @(posedge clk);
             while (!data_rdy) begin
                 @(posedge clk);

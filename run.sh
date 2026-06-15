@@ -78,8 +78,10 @@ rm -rf .multisim
 ./run_verilator.sh &> sim.log &
 ./run_qemu.sh ../sw/example.elf
 
+sleep 2 # Leave some time to verilator to exit
+
 clean_exit=0
-grep -E "^exiting!" sim.log || clean_exit=1
+grep -E "^exiting!" sim.log &> /dev/null || clean_exit=1
 
 if [[ $clean_exit != 0 ]]; then
     echo "simulation failed!"
