@@ -34,7 +34,7 @@ C_FLAGS := -O2 \
 	-Wl,--no-warn-rwx-segments \
 	-Wl,--no-relax
 
-hello.elf: $(SOURCE_FILES) $(HEADER_FILES) $(LINKER_SCRIPT)
+example.elf: $(SOURCE_FILES) $(HEADER_FILES) $(LINKER_SCRIPT)
 	$(CC) $(C_FLAGS) -Isrc/ -o $@ $(SOURCE_FILES) -T $(LINKER_SCRIPT)
 	$(OBJDUMP) -D $@ > $@.S
 

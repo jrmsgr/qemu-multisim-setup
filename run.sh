@@ -70,13 +70,13 @@ cd ../..
 
 banner "compiling sw"
 cd sw
-make hello.elf HETZNER=$hetzner
+make example.elf
 
 banner "running test"
 cd ../tb
 rm -rf .multisim
 ./run_verilator.sh &> sim.log &
-./run_qemu.sh ../sw/hello.elf
+./run_qemu.sh ../sw/example.elf
 
 clean_exit=0
 grep -E "^exiting!" sim.log || clean_exit=1
