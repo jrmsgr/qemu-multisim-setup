@@ -1,3 +1,5 @@
+# Create multisim .so releases compiled for SW
+
 TARGET ?= SW
 TARGET_LC := $(shell echo $(TARGET) | tr A-Z a-z)
 
