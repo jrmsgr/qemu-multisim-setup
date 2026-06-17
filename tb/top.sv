@@ -136,14 +136,14 @@ module top;
 
   bit interrupt_update_pending;
 
-  axe_dv_interrupt_adapter #(
-    .IRQ_NUMBER(64)
-  ) i_axe_dv_interrupt_adapter (
+  localparam IRQ_NUMBER = 64;
+
+  multisim_server_quasi_static_push #(
+      .DATA_WIDTH(IRQ_NUMBER)
+  ) i_multisim_server_quasi_static_push_irqs (
       .clk(clk),
-      .rst_n(rst_n),
-      .server_name(server_name),
-      .interrupts(i_dv_axi_ram.mem[1000]),
-      .update_pending(interrupt_update_pending)
+      .server_name($sformatf("%s_interrupts", server_name)),
+      .data(i_dv_axi_ram.mem[1000])
   );
 
   initial begin
