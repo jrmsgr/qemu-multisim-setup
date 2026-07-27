@@ -1,4 +1,4 @@
-#!/usr/bin/env
+#!/usr/bin/env bash
 
 set -e
 
@@ -23,9 +23,10 @@ banner "Creating AppImage dir structure"
                                              -i ./QemuMultisim.AppDir/qemu.svg
 
 # Override copied libs as linuxdeploy incorrectly infer which ones to copy
-# TODO: Call `strip` on copied to reduce size
-cp multisim_release/*.so usr/lib
-cp -r ./glib-*-release/lib64/ usr/lib
+cp multisim_release/*.so ./QemuMultisim.AppDir/usr/lib
+cp -r ./glib-*-release/lib64/*.so* ./QemuMultisim.AppDir/usr/lib
+# Call `strip` on copied libs to reduce size
+find ./QemuMultisim.AppDir/usr/lib -type f -exec strip {} \;
 
 banner "Building AppImage"
-./appimage_utils/appimagetool-x86_64.AppImage QemuMultisim.AppDir/
+./appimage_utils/appimagetool-x86_64.AppImage ./QemuMultisim.AppDir/
