@@ -1,0 +1,32 @@
+# Build qemu-system-riscv64 and bundle it into an AppImage, in a Rocky 8 container.
+#
+# Usage:
+#   docker compose run --rm build-appimage
+#
+# The repository is bind-mounted at /work, so all build artifacts
+# (qemu/build, multisim_release, glib-*-release, appimage_utils,
+# QemuMultisim.AppDir and the final *.AppImage) land back in the repo.
+services:
+  build-appimage:
+    build:
+      context: .
+      dockerfile: Dockerfile.appimage
+    image: qemu-multisim-appimage-builder
+    working_dir: /work
+    volumes:
+      - .:/work
+    environment:
+      # Self-extract the AppImage tooling (no FUSE in the container).
+      APPIMAGE_EXTRACT_AND_RUN: "1"
+    # Enable gcc-toolset-15 (gcc/g++ >= 16.x), refresh submodules, then run
+    # the two build scripts described in the README.
+    command:
+      - bash
+      - -lc
+      - |
+        set -euo pipefail
+        source /opt/rh/gcc-toolset-15/enable
+        git config --global --add safe.directory /work
+        git submodule update --init --recursive
+        ./scripts/build_rocky8.sh
+        ./scripts/build_appimage.sh

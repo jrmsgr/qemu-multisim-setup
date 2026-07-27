@@ -41,7 +41,7 @@ git submodule init
 git submodule update
 
 # Install required packages and enable gcc-toolset
-sudo dnf install git make glib2 glib2-devel python39 gcc-toolset-15 wget flex bison
+sudo dnf install git make python39 gcc-toolset-15 wget flex bison bzip2
 scl enable gcc-toolset-15 bash
 sudo python3.9 -m pip install --upgrade "setuptools>=64"
 pip3.9 install --user wheel tomli ninja meson
@@ -51,3 +51,36 @@ pip3.9 install --user wheel tomli ninja meson
 ### AppImage build
 
 `qemu` and its dependencies can be bundled inside an AppImage using `scripts/build_appimage.sh`.
+
+A `docker-compose.yml` is also provided to automatically build it inside a `rocky8` docker image. Make sure `docker` is installed on your machine, then run:
+
+```bash
+cd qemu-multisim-setup
+git submodule init
+git submodule update
+docker compose run --build --rm build-appimage
+```
+
+The resulting artifact, `./QemuMultisim-x86_64.AppImage`, can be executed as is:
+
+```
+❯ ./QemuMultisim-x86_64.AppImage -machine help
+Supported machines are:
+amd-microblaze-v-generic AMD Microblaze-V generic platform
+axe_dv               RISC-V AxeDv board
+boston-aia           MIPS Boston-aia
+microchip-icicle-kit Microchip PolarFire SoC Icicle Kit
+none                 empty machine
+shakti_c             RISC-V Board compatible with Shakti SDK (deprecated)
+sifive_e             RISC-V Board compatible with SiFive E SDK
+sifive_u             RISC-V Board compatible with SiFive U SDK
+spike                RISC-V Spike board
+virt                 RISC-V VirtIO board
+xiangshan-kunminghu  RISC-V Board compatible with the Xiangshan Kunminghu FPGA prototype platform
+```
+
+Or with `APPIMAGE_EXTRACT_AND_RUN=1` if [FUSE](https://github.com/AppImage/AppImageKit/wiki/FUSE) is not installed:
+
+```bash
+APPIMAGE_EXTRACT_AND_RUN=1 ./QemuMultisim-x86_64.AppImage -machine help
+```
