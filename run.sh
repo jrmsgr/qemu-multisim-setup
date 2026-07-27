@@ -56,13 +56,10 @@ export PATH="$GLIB2_INSTALL_DIR/bin:$PATH"
 
 banner "compiling qemu"
 cd qemu
-if ! [ -d build ]; then
-    mkdir build
-    cd build
+mkdir -p qemu/build
+cd qemu/build
+if ! [ -f qemu-system-riscv64 ]; then
     ../configure -Dmultisim-release-dir=$MULTISIM_RELEASE_DIR
-else
-    # qemu automatically reconfigures itself if a build is already present
-    cd build
 fi
 
 make qemu-system-riscv64 -j8

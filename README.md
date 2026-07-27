@@ -19,13 +19,31 @@ Links to the different pieces:
 - Interrupt forward block: [axe-dv-interrupt-adapter.sv](./tb/axe-dv-interrupt-adapter.sv)
 - SW test running on QEMU: [main.c](./sw/src/main.c)
 
-
 ## How to run
 
 - Checkout all submodules:
 ```bash
 git submodule init
-git pull --recurse-submodules
+git submodule update
 ```
 - Make sure `verilator`, `gcc/g++ >= 16.1.1`, `riscv64-elf-gcc` and `riscv64-elf-objdump` are installed.
 - Execute `run.sh` to compile and run everything
+
+## Building QEMU
+
+Since the QEMU version used by this example has been customized to add multisim support, it must be built from source. The sections below detail how to proceed for Rocky 8 Linux and Arch Linux.
+
+### On Rocky8
+
+```bash
+cd qemu-multisim-setup
+git submodule init
+git submodule update
+
+# Install required packages and enable gcc-toolset
+sudo dnf install git make glib2 glib2-devel python39 gcc-toolset-15 wget flex bison
+scl enable gcc-toolset-15 bash
+sudo python3.9 -m pip install --upgrade "setuptools>=64"
+pip3.9 install --user wheel tomli ninja meson
+./build/rocky8.sh
+```
