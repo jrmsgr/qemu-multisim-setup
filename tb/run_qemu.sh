@@ -50,6 +50,6 @@ if [[ $trace == 1 ]]; then
     extra_args+=("-trace 'axe_dv_rtl_sim_*'")
 fi
 
-eval "$gdb_cmd ../qemu/build/qemu-system-riscv64 \
+eval "$gdb_cmd qemu-system-riscv64 \
     -machine axe_dv,axe-dv-rtl-multisim-server-prefix=$multisim_server_name,axe-dv-rtl-sim-irq-number=64 \
     -cpu rv64 -bios $elf_name ${extra_args[@]} -d in_asm -D trace.log"

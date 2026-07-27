@@ -1,0 +1,7 @@
+[Desktop Entry]
+Name=QemuMultisim
+Exec=qemu-system-riscv64
+Type=Application
+Icon=qemu
+Categories=Utility;
+

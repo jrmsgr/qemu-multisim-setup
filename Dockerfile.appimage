@@ -1,0 +1,29 @@
+# Rocky 8 build environment for bundling qemu-system-riscv64 into an AppImage.
+# Mirrors the prerequisites from README.md ("Building QEMU > On Rocky8").
+FROM rockylinux:8
+
+# Prerequisites from the README, plus:
+#  - epel-release/patchelf : linuxdeploy needs patchelf to fix rpaths
+#  - file/findutils/diffutils/tar/xz : required by the build & AppImage tooling
+RUN dnf -y install 'dnf-command(config-manager)' \
+    && dnf -y install epel-release \
+    && dnf -y install \
+        git make wget flex bison \
+        python39 \
+        gcc-toolset-15 \
+        bzip2 \
+        patchelf file findutils diffutils tar xz \
+    && dnf clean all
+
+# Build tooling installed via pip, matching the README (running as root so we
+# install globally into /usr/local/bin instead of --user).
+RUN python3.9 -m pip install --upgrade pip \
+    && python3.9 -m pip install --upgrade "setuptools>=64" \
+    && python3.9 -m pip install wheel tomli ninja meson
+
+# The AppImage tools (appimagetool / linuxdeploy) are themselves AppImages.
+# There is no FUSE inside the container, so tell them to self-extract instead
+# of mounting via FUSE.
+ENV APPIMAGE_EXTRACT_AND_RUN=1
+
+WORKDIR /work
