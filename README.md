@@ -45,5 +45,9 @@ sudo dnf install git make glib2 glib2-devel python39 gcc-toolset-15 wget flex bi
 scl enable gcc-toolset-15 bash
 sudo python3.9 -m pip install --upgrade "setuptools>=64"
 pip3.9 install --user wheel tomli ninja meson
-./build/rocky8.sh
+./scripts/rocky8.sh
 ```
+
+### AppImage build
+
+`qemu` and its dependencies can be bundled inside an AppImage using `scripts/build_appimage.sh`.

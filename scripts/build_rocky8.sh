@@ -2,18 +2,7 @@
 
 set -e
 
-error() {
-    echo "ERROR: $1" >&2
-    exit 1
-}
-
-banner() {
-    echo "##########################################"
-    echo "$1"
-    echo "##########################################"
-}
-
-REPO_ROOT=$(git rev-parse --show-toplevel)
+source $(dirname $(realpath $(readlink -f "$0")))/utils.sh
 
 cd $REPO_ROOT
 
