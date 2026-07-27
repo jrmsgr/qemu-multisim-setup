@@ -21,13 +21,17 @@ Links to the different pieces:
 
 ## How to run
 
-- Checkout all submodules:
+- Make sure `verilator`, `gcc/g++ >= 16.1.1`, `riscv64-elf-gcc` and `riscv64-elf-objdump` are installed.
+
 ```bash
 git submodule init
 git submodule update
+# Build QEMU
+./scripts/build_rocky8.sh
+
+# Run the example
+./run.sh
 ```
-- Make sure `verilator`, `gcc/g++ >= 16.1.1`, `riscv64-elf-gcc` and `riscv64-elf-objdump` are installed.
-- Execute `run.sh` to compile and run everything
 
 ## Building QEMU
 
@@ -58,8 +62,10 @@ A `docker-compose.yml` is also provided to automatically build it inside a `rock
 cd qemu-multisim-setup
 git submodule init
 git submodule update
-docker compose run --build --rm build-appimage
+./scripts/build_appimage_docker.sh
 ```
+
+That wrapper exports `HOST_UID`/`HOST_GID` before calling `docker compose`, so the container builds as the calling user and the artifacts it writes back into the repo are owned by them rather than by `root`.
 
 The resulting artifact, `./QemuMultisim-x86_64.AppImage`, can be executed as is:
 
